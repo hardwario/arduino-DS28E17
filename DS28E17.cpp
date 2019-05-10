@@ -3,7 +3,7 @@
 
 // camelCase
 // classa SoilSensor
-// komentáře to english ;)
+// komentáře do anglictiny
 
 DS28E17::DS28E17()
 {
@@ -115,7 +115,7 @@ bool DS28E17::memoryWrite(uint8_t i2cAddress, uint8_t i2cRegister, uint8_t *data
 }
 
 //spolecna cast pro cteni - vypocet CRC, odeslani pozadavku, precteni stavu a dat
-bool DS28E17::_readFrom(uint8_t *header, uint8_t headerLenght, uint8_t *readed, uint8_t readedLenght)
+bool DS28E17::_readFrom(uint8_t *header, uint8_t headerLenght, uint8_t *buffer, uint8_t bufferLength)
 {   
   uint8_t crc[2];
   uint16_t crc16 = oneWire->crc16(&header[0], headerLenght);
@@ -151,8 +151,8 @@ bool DS28E17::_readFrom(uint8_t *header, uint8_t headerLenght, uint8_t *readed, 
   Serial.print("Write Status =");
   Serial.println(write_stat,BIN);*/
 
-  for (int i=0; i<readedLenght; i++){
-    readed[i] = oneWire->read();
+  for (int i=0; i<bufferLength; i++){
+    buffer[i] = oneWire->read();
   }
 
   oneWire->depower(); 
@@ -161,21 +161,21 @@ bool DS28E17::_readFrom(uint8_t *header, uint8_t headerLenght, uint8_t *readed, 
 }
 
 //cteni dat pozadovne delky, data jsou predana pres ukazatel
-bool DS28E17::read(uint8_t i2cAddress, uint8_t *readed, uint8_t readedLenght)
+bool DS28E17::read(uint8_t i2cAddress, uint8_t *buffer, uint8_t bufferLength)
 {
   uint8_t header[3];
   uint8_t headerLenght = 3;
 
   header[0] = DS28E17_READ;           // DS28E17 Command
   header[1] = i2cAddress << 1 | 0x01; // 7 bit i2c Address
-  header[2] = readedLenght;           // number of bytes to be read
+  header[2] = bufferLength;           // number of bytes to be read
 
-  return _readFrom(header, headerLenght, readed, readedLenght); 
+  return _readFrom(header, headerLenght, buffer, bufferLength); 
 }
 
 //cteni dat pozadovne delky z adresy 8 nebo 16bit, data jsou predana pres ukazatel
-//TODO readed - buffer/bufferLength
-bool DS28E17::memoryRead(uint8_t i2cAddress, uint16_t i2cRegister, uint8_t *readed, uint8_t readedLenght) 
+//TODO buffer - buffer/bufferLength
+bool DS28E17::memoryRead(uint8_t i2cAddress, uint16_t i2cRegister, uint8_t *buffer, uint8_t bufferLength) 
 {
   uint8_t header[6];
   uint8_t headerLenght;
@@ -187,7 +187,7 @@ bool DS28E17::memoryRead(uint8_t i2cAddress, uint16_t i2cRegister, uint8_t *read
     header[2] = 0x02;                 // number of bytes to be written 
     header[3] = i2cRegister >> 8;     // i2c device register address
     header[4] = i2cRegister;          // i2c device register address  
-    header[5] = readedLenght;         // number of bytes to be read
+    header[5] = bufferLength;         // number of bytes to be read
   }
   else {
     headerLenght = 5;
@@ -195,8 +195,8 @@ bool DS28E17::memoryRead(uint8_t i2cAddress, uint16_t i2cRegister, uint8_t *read
     header[1] = i2cAddress << 1;      // 7 bit i2c Address
     header[2] = 0x01;                 // number of bytes to be written 
     header[3] = i2cRegister;          // i2c device register address  
-    header[4] = readedLenght;         // number of bytes to be read
+    header[4] = bufferLength;         // number of bytes to be read
   }
 
-  return _readFrom(header, headerLenght, readed, readedLenght);    
+  return _readFrom(header, headerLenght, buffer, bufferLength);    
 }
