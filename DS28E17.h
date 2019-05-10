@@ -14,6 +14,7 @@
 class DS28E17
 {
   public:
+    DS28E17();
     DS28E17(OneWire *oneWire);
     bool setAddress(uint8_t *sensorAddress); 
     void wakeUp();
